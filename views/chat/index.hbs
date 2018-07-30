@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" type="text/css" href="css/design.css">
+</head>
+<body>
+    <ul id="messages"></ul>
+    <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+            var socket = io();
+            $('form').submit(function(){
+                socket.emit('chat message', $('#m').val());
+                addMessage($("#m").val(), 'own');
+                $('#m').val('');
+                return false;
+            });
+
+            socket.on('system', function (msg) {
+                addMessage(msg, 'system');
+            });
+
+            socket.on('broadcast', function (msg) {
+                addMessage(msg, 'broadcast');
+            });
+
+            socket.on('chat message', function(msg) {
+                addMessage(msg);
+            });
+        });
+
+        function addMessage(msg, type) {
+            $("#messages").append($('<li class="' + type + '">').append($('<div>').append($('<span class="msg-text">').text(msg)).append($('<span class="msg-time">').text(getTime()))));
+        }
+
+        function getTime() {
+            var d = new Date();
+            return d.getHours() + ":" + d.getMinutes();
+        }
+    </script>
+</body>
+</html>

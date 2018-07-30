@@ -1,0 +1,20 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "Chat server based on NodeJS, Express and MongoDB",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon ./server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "paranerd",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "express-hbs": "^1.0.4",
+    "mongodb": "^3.1.1",
+    "mongoose": "^5.2.5",
+    "socket.io": "^2.1.1"
+  }
+}
