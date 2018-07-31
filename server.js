@@ -1,19 +1,16 @@
-// Routes vs controllers
-// https://www.terlici.com/2014/09/29/express-router.html
-
 var express = require('express')
 var app = express();
 var bodyParser = require('body-parser');
 var hbs  = require('express-hbs');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var db = require('./database');
+var db = require('./config/database');
+var passport = require('passport');
+var session = require('express-session');
+var flash = require('connect-flash');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }))
-
-// Include controllers
-app.use(require('./controllers'));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // Include assets
 app.use(express.static(__dirname + '/public'));
@@ -23,6 +20,18 @@ app.engine('hbs', hbs.express4({extname: '.hbs'}));
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
+// Setup passport
+require('./config/passport')(passport);
+app.use(session({ secret: 'mylittlesecret' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+
+// Include controllers
+app.use(require('./controllers'));
+
+var User = require('./models/user');
+
 io.on('connection', function(socket) {
     console.log('a user connected');
     socket.broadcast.emit('broadcast', socket.id + ' connected');
@@ -31,11 +40,6 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         console.log(socket.id + ' disconnected');
         socket.broadcast.emit('broadcast', socket.id + ' disconnected');
-
-        if (io.engine.clientsCount == 0) {
-            // Close database properly
-            //db.close();
-        }
     });
 
     socket.on('chat message', function(msg) {

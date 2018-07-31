@@ -1,9 +1,39 @@
-<h1>Register</h1>
+<!doctype html>
+<html>
+<head>
+    <title>Register | Chat</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/design.css">
+</head>
+<body>
+<div class="container">
+    <div id="register" class="col-sm-6 col-sm-offset-3">
+        <h1><span class="fa fa-sign-in"></span> Register</h1>
 
-<p>{{error}}</p>
+        <!-- show any messages that come back with authentication -->
+        {{#if message}}
+            <div class="alert alert-danger">{{message}}</div>
+        {{/if}}
 
-<form action="register" method="post">
-    <input name="username" type="text" placeholder="Username" />
-    <input name="password" type="password" placeholder="Password" />
-    <input type="submit" value="Login"/>
-</form>
+        <!-- LOGIN FORM -->
+        <form action="register" method="post">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" name="username" placeholder="Username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" name="password" placeholder="Password">
+            </div>
+
+            <button type="submit" class="btn btn-warning btn-lg">Login</button>
+        </form>
+
+        <hr>
+
+        <p>Don't have an account yet? <a href="/user/register">Signup</a></p>
+    </div>
+</div>
+</body>
+</html>

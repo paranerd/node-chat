@@ -1,24 +1,26 @@
-let mongoose = require('mongoose')
+var mongoose = require('mongoose');
+var bcrypt   = require('bcrypt-nodejs');
 
-let UserSchema = new mongoose.Schema({
-  name: String,
-  password: String
-})
+var UserSchema = new mongoose.Schema({
+    firstName: String,
+    lastName: String,
+    username: String,
+    password: String
+});
 
-module.exports = mongoose.model('users', UserSchema)
+// Generating a hash
+UserSchema.methods.generateHash = function(password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
 
-/*
-You could also create custom methods here:
-var User = mongoose.model('users', UserSchema);
+// Checking if password is valid
+UserSchema.methods.validPassword = function(password) {
+    return bcrypt.compareSync(password, this.password);
+};
 
-var create = function(data, callback) {
-    var newUser = new User(data);
+UserSchema.statics.create = function(data) {
+    var newUser = new this(data);
     newUser.save();
 };
 
-module.exports = {
-    create
-};
-
-The user-controller would require the model just like before but could now call User.create({}) for creating and saving in one call
-*/
+module.exports = mongoose.model('users', UserSchema)

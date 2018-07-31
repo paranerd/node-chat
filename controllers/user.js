@@ -1,48 +1,46 @@
 var express = require('express');
 var router = express.Router();
+var passport = require('passport');
 var User = require('../models/user');
 
-router.get('/', function(req, res) {
-    res.send("user root");
+router.get('/', isLoggedIn, function(req, res) {
+    res.send('private area')
 });
 
 router.get('/register', function(req, res) {
-    res.render('user/register');
+    res.render('user/register', { message: req.flash('signupMessage') });
 });
 
-router.post('/register', function(req, res) {
-    User.findOne({name: req.body.username}, function(err, user) {
-        if (err) throw err;
-
-        if (user) {
-            res.render('user/register', {error: 'User exists'});
-        }
-        else {
-            var newUser = new User({name: req.body.username, password: req.body.password});
-            newUser.save(function(err, done) {
-                if (err) throw err;
-
-                res.redirect('/chat')
-            });
-        }
-    });
-});
+router.post('/register', passport.authenticate('register', {
+    successRedirect: '/chat',
+    failureRedirect: 'register',
+    failureFlash: true
+}));
 
 router.get('/login', function(req, res) {
-    res.render('user/login', {});
+    res.render('user/login', { message: req.flash('loginMessage') });
 });
 
-router.post('/login', function(req, res) {
-    User.findOne({name: req.body.username}, function(err, user) {
-        if (err) throw err;
+router.post('/login', passport.authenticate('login', {
+    successRedirect: '/chat',
+    failureRedirect: '/user/login',
+    failureFlash: true
+}));
 
-        if (user) {
-            res.redirect('/chat')
-        }
-        else {
-            res.redirect('register')
-        }
-    });
+router.get('/logout', function(req, res) {
+    req.logout();
+    res.redirect('/user/login');
 });
+
+// Check if user is logged in
+function isLoggedIn(req, res, next) {
+    if (req.isAuthenticated()) {
+        // User is logged in, go on
+        return next();
+    }
+
+    // User is not logged in, redirect to login
+    res.redirect('/user/login');
+}
 
 module.exports = router;
