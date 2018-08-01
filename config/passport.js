@@ -65,7 +65,7 @@ module.exports = function(passport) {
                 return done(null, false, req.flash('loginMessage', 'Invalid credentials.')); // req.flash is the way to set flashdata using connect-flash
 
             // Successful login
-            req.session.myuser = "worx";
+            req.session.username = username;
             return done(null, user);
         });
 

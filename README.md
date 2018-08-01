@@ -47,11 +47,6 @@ app.get('/', function(req, res) {
     res.send('Hello World!');
 });
 
-// Another section that will be responsible for requests to localhost:8080/another
-app.get('/another', function(req, res) {
-    res.send('Another World!');
-});
-
 // Start a server that listens to port 8080
 http.listen(8080, function() {
   console.log('listening on *:8080');
@@ -63,64 +58,118 @@ After executing
 node server.js
 ```
 
-we go to our browser, visit localhost:8080, then localhost:8080/another, check out all the cool things that are happening and sit in awe.
+we go to our browser, visit localhost:8080, check out all the cool things that are happening and sit in awe. Well, it's really just text so far, so don't waste your time waiting for something special to come up here^^ - but don't worry, there are special things to come!
 
-## The structure of a NodeJS-Project
+## How to structure a NodeJS-Project
+Before we go any further, let's have a quick look into the structure of a NodeJS-Project. When you search the web for suggestions on that one, you will be flooded with a miriad of opinions on what's the best way to organize your code. To be honest, I don't claim perfection for my approach. I simply took the best out of all that I could find on this topic and what I came up with works great for me. So in the end you're getting just another opinion here^^. Feel free to go out there and find your own way - just make sure that you actually DO have any sort of organization in your project and don't just throw everything in one folder.
 
-[project_name]  
-|---- config  
-|---- controllers  
-|---- models  
-|---- public  
-|---- views  
-|---- package.json
-|---- server.js
+So, without further ado, here's how I'm doing it:
 
+project/  
+|-- config/  
+|-- controllers/  
+|-- models/  
+|-- public/  
+|-- views/  
+|-- package.json  
+|-- server.js
+
+Let me explain...
+
+#### config/
+As the name suggests, this is where all your configuration files go, for example database-credentials, access-tokens and the like. It's great to have all these in one place and not scattered all over the place.
+
+#### controllers/
+We will cover controllers in another chapter, so just the basics at this point. Controllers are a great way to handle the routing of your site. They may seem overkill on very small applications but trust me, you're going to love them once you've got more than a handful of routes to take care of. I suggest you use them no matter the size of your project. That way all your projects are going to have the same 'skeleton' which helps tremendously when maintaining. Besides it's a real pain to rework your previously tiny no-structure project into a structured one because you lost track of all your files when that sneaky little app quietly grew bigger. But again: more on all of that in its own chapter.
+
+#### models/
+Some more slightly more advanced stuff in here. Models provide a layer of abstraction between your code and the database. They make sure you don't have to mess around with database-specific stuff. That gives you some freedom in choosing your database and keeps your code clean. We will be covering this in a dedicated chapter as well.
+
+#### public/
+This is where all your CSS, JavaScript, images and all the other static assets live. It's called 'public' because the files in there usually require to be directly publicly available (as compared to the code in your models, that you might want to keep private).
+
+#### views/
+If you're not completely new to web development, you might have noticed: we're working with an MVC-Framework here. M for Model, C for Controller and V for... you guessed it: View. Views are basically your HTMLs (or templates, but we'll get to that later).
+
+#### package.json
+Very important file, especially when it comes to working in a team or when publishing your code. We will be covering this in more detail in its own chapter (that's just how important it is!). Basically this file holds some general information about your project, such as its name, the current version, a description, the developers name. In addition (and perhaps more important) it contains details about the packages your project depends on. With this setup other developers don't have to manually figure out what to install but can instead simply use a tool called 'npm' to do this automatically. More on that in a dedicated chapter.
+
+#### server.js
+This is the starting point of your application. It's what you call when you fire up your server (hence the name^^) and it acts as a root that connects all the other pieces.
+
+## Working with HTML
+So far we only sent plain text to the browser. Already kind of exciting but we want to be able to serve really cool HTML, don't we?! Let's go do that right now!
+
+In our `views/` directory we add a file called `index.html` with the following content:
+```html
+<!DOCTYPE html>
+<head>
+    <title>My first NodeJS-App</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+</body>
+</html>
 ```
-npm init
-```
-This will create a package.json based on your inputs
 
-## package.json
-The package.json holds all of your project's dependencies (if you install them with the --save option)
-
-So on a later re-install you can just use
-```sh
-npm install
-```
-to have everything installed automatically
-
-**Startup script**
-
-Tell npm what to do to start your server
+Now we modify our `server.js` and replace the old routing with this one:
 ```js
-"scripts": {
-    "start": "node server.js"
+app.get('/', function(req, res) {
+    res.sendFile('index.html', {root: 'views'});
+});
+```
+
+This tells the express-server: "If a visitor comes to our website, show him the `index.html` from folder `views/`"
+
+Start the server via
+```
+node server.js
+```
+
+and navigate to [localhost:8080](localhost:8080) in the browser.  
+We are greeted by a nice "Hello World!" again but this time it's not plain text but some really cool HTML \*wooow\*
+
+## Adding CSS and JavaScript
+Even if that HTML-Hello-World was very cool, it does still look a little boring, so let's add some styling.
+
+In our `public/` folder we first add another folder called `css/`. In there we create a file `design.css` with the following content:
+```css
+h1 {
+    color: red;
 }
 ```
-Now anyone can simply call
-```sh
-npm start
-```
-without having to figure out which file starts your server
 
-## Install plugins
-Nodemon restarts the server on file changes
-```
-npm install -g nodemon
+We reference this file in our `views/index.html` as we normally would:
+```html
+<head>
+    <link rel="stylesheet" type="text/css" href="css/design.css">
+</head>
 ```
 
-## Add CSS- and JS-Files
-All static content (CSS, JS, images, etc.) belongs in the `public/` directory  
-To be able to reference it, we need to tell ExpressJS where to find it in `chat/server.js`
+In a vanilla HTML-Appliction this would do, but in NodeJS we still have to tell express where to look for our public assets.  
+To do this we add this to our `server.js` somewhere between the variable declarations and the server startup
 ```js
 app.use(express.static(__dirname + '/public'));
 ```
 
-Now you may add `public/design.css` and link to it as you normally would in `chat/index.html`
+\_\_dirname is a NodeJS-variable that gives us the absolute path of the parent-directory of the file it is called in.  
+Not hardcoding the path to our project allows it to be portable between different systems.
+
+Start the server, fire up the browser and look at this magnificent red!
+
+Now that express already knows where our public files are, including JavaScript in our `index.html` is very easy.  
+For the sake of a clear structure I recommend putting your JavaScript-files into the to-be-created folder `public/js/`
+
+Reference a JS-file in there like this:
 ```html
-<link rel="stylesheet" type="text/css" href="css/design.css">
+<script src="js/my_script.js" type="text/javascript"></script>
 ```
+
+Since this is not a tutorial for CSS or (client-side) JavaScript, I will leave it to you to get crazy with awesome designs and amazing functions.
+
+## Handling requests
+GET, POST
+To-Do...
 
 ## Routing
 There are several different ways to implement routing in ExpressJS
@@ -170,9 +219,6 @@ app.use('/', routes);
 While this is already better and makes the server.js a lot more readable, we would still end up with one huge file for all the requests  
 This is where controllers come in...
 
-## Handling requests
-To-Do...
-
 ## Controllers
 Controllers allow organizing your site's routing into smaller, more maintainable chunks
 
@@ -218,6 +264,39 @@ app.use(require('./controllers'));
 ```
 
 That last part will find the index.js in the controllers-folder and with it have access to all the routes
+
+## Using npm
+```
+npm init
+```
+This will create a package.json based on your inputs
+
+The package.json holds all of your project's dependencies (if you install them with the --save option)
+
+So on a later re-install you can just use
+```sh
+npm install
+```
+to have everything installed automatically
+
+#### Startup script
+Tell npm what to do to start your server
+```js
+"scripts": {
+    "start": "node server.js"
+}
+```
+Now anyone can simply call
+```sh
+npm start
+```
+without having to figure out which file starts your server
+
+## Install plugins
+Nodemon restarts the server on file changes
+```
+npm install -g nodemon
+```
 
 ## Socket.IO
 Socket.IO provides WebSockets
@@ -576,4 +655,32 @@ function isLoggedIn(req, res, next) {
 }
 
 module.exports = router;
+```
+
+## Access session with SocketIO
+[The docs](https://www.npmjs.com/package/express-socket.io-session)
+
+```sh
+npm install express-socket.io-session
+```
+
+```js
+var session = require('express-session')({
+    secret: 'mylittlesecret',
+    resave: true,
+    saveUninitialized: true
+});
+
+var ioSession = require("express-socket.io-session");
+
+// To have changes visible in express-session as well
+io.use(ioSession(session, {
+    autoSave:true
+}));
+
+io.on('connection', function(socket) {
+    socket.handshake.session.test = 'this works');
+
+    console.log(socket.handshake.session);
+});
 ```

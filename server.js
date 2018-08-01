@@ -4,10 +4,15 @@ var bodyParser = require('body-parser');
 var hbs  = require('express-hbs');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var ioSession = require("express-socket.io-session");
 var db = require('./config/database');
 var passport = require('passport');
-var session = require('express-session');
 var flash = require('connect-flash');
+var session = require('express-session')({
+    secret: 'mylittlesecret',
+    resave: true,
+    saveUninitialized: true
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -22,7 +27,7 @@ app.set('views', __dirname + '/views');
 
 // Setup passport
 require('./config/passport')(passport);
-app.use(session({ secret: 'mylittlesecret' })); // session secret
+app.use(session);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
@@ -30,20 +35,29 @@ app.use(flash());
 // Include controllers
 app.use(require('./controllers'));
 
-var User = require('./models/user');
+// Setup sockets-io
+io.use(ioSession(session, {
+    autoSave: true
+}));
 
 io.on('connection', function(socket) {
-    console.log('a user connected');
-    socket.broadcast.emit('broadcast', socket.id + ' connected');
-    io.emit('system', 'hello');
+    console.log(socket.handshake.session.username + " (" + socket.id + ") connected");
+
+    // Tell everyone who joined
+    socket.broadcast.emit('broadcast', socket.handshake.session.username + ' connected');
+
+    // Greet new user
+    socket.emit('system', 'hello ' + socket.handshake.session.username);
 
     socket.on('disconnect', function() {
-        console.log(socket.id + ' disconnected');
-        socket.broadcast.emit('broadcast', socket.id + ' disconnected');
+        console.log(socket.handshake.session.username + ' disconnected');
+        socket.broadcast.emit('broadcast', socket.handshake.session.username + ' disconnected');
+        delete socket.handshake.session.username;
     });
 
     socket.on('chat message', function(msg) {
         socket.broadcast.emit('chat message', msg);
+        socket.handshake.session.sockettest = 'working';
     });
 });
 
