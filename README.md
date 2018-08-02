@@ -1,4 +1,4 @@
-# Node.js chat server
+# Node.js tutorial
 
 ## Installing NodeJS
 Since the package in the official repository isn't always up-to-date, we have to get the latest version using this command:
@@ -6,14 +6,19 @@ Since the package in the official repository isn't always up-to-date, we have to
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 ```
 
-This will now install the current version
-
+This will install the current version:
 ```
 sudo apt-get install -y nodejs
 ```
 
+Now we need a folder to give our project a home. You can obviously call it whatever you like, I will be using `node_tutorial`
+```sh
+mkdir node_tutorial
+```
+
 ## Hello World
-Creating a Hello World Application in NodeJS doesn't require very much. Since we have the nodejs-package already installed on our system, all we need is the following line that we put in `server.js`:
+Before we move on to more boring stuff like setting up or project properly, let's do something fun!
+Creating a Hello World Application in NodeJS doesn't require very much. Since we have the nodejs-package already installed on our system, all we need is a file called `server.js` in our project-folder with the following line in it:
 ```js
 console.log("Hello World!");
 ```
@@ -22,48 +27,135 @@ When we execute this script by calling
 ```sh
 node server.js
 ```
-we can see "Hello World!" popping up on screen. Fantastic, isn't it? It will get a lot more complex down the road but you've just taken your first step into the world of Node!
+we can see "Hello World!" popping up on screen. Fantastic, isn't it? It will get a lot more complex down the road but you've just taken your first step into the world of Node!  
+Having our motivation boosted, we can eagerly move on!
+
+## Working with npm
+With the installation of the nodejs-package also came a tool called 'npm' (Node Package Manager). We will be using this quite a bit when developing for NodeJS.
+For a start it helps us setting up our project properly.
+
+Now we can let the npm-magic happen:
+```sh
+npm init
+```
+
+This will ask you for a couple of things. You should at least enter your project's name, the current version and your name as the author.
+Setting the **entry point** to `server.js` helps anyone working with your project to have this information easily accessible without having to search through all your files.
+The rest of the fields can be left blank for now.
+
+When finished we will end up with a `package.json` in our project-root based on our inputs. Let's have a closer look into that.
+
+Opening the `package.json` you will see something similar to this:
+```json
+{
+  "name": "node_tutorial",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "paranerd",
+  "license": "ISC"
+}
+```
+
+Never mind that 'Error'-part in the 'scripts'-section. You could replace it with your own command to run tests on your project. We don't have those right now, so we'll just ignore it.
+
+#### Installing packages
+Apart from setting up a project, npm (as the name suggests) is mostly used for managing packages.  
+To demonstrate, let's install nodemon:
+```sh
+npm install nodemon
+```
+
+Nodemon is a really helpful tool for developing in NodeJS. Normally, when changing something in your code, you would have to kill and restart node for the changes to apply. Doesn't sound like a lot of effort, but trust me, it adds up and gets really annoying really fast.  
+Similarly when you have a bug in your code (which will happen A LOT), node would just crash and you'll have to manually restart it.
+
+Nodemon takes this burden off your chest. It monitors your files and automatically restarts the server on changes. When it encounters a bug, it goes into halt, waits for you to update the file and tries again.
+
+Running the command will create a folder `node_modules/` in our project-root and install nodemon there.
+
+Checking your `package.json` you can see that there is a new section 'dependencies' looking something like:
+```json
+{
+    "dependencies": {
+        "nodemon": "^1.18.3"
+    }
+}
+```
+
+By default npm adds every package you install to that section. This is especially great when working with a lot of packages.  
+The `node_modules/` folder can get quite big and you don't necessarily want it in your backup, your version management or have to move it around to everyone that wants a copy of your code.
+
+With the `package.json` in place you can omit the `node_modules/` entirely and a simple call to
+```sh
+npm install
+```
+will automatically re-install all dependencies for you.  
+Give it a try: remove `node_modules/`, run the install-command and watch the folder and its contents magically re-appear!
+
+#### Setting a startup script
+Having nodemon installed we can tweak our packages.json a bit:
+```json
+{
+    "scripts": {
+        "start": "nodemon server.js"
+    }
+}
+```
+
+Now when anyone calls
+```sh
+npm start
+```
+from within your project-folder, it starts the server without them having to figure out its entry point.
+
+There is so much more npm is capable of, but diving into all of it would be beyond the scope of this tutorial.  
+For anyone who's interested, check out their [documentation](https://docs.npmjs.com)
 
 ## Hello World - The next level
-While the console is great for debugging and stuff, we actually want to put things on the web, don't we? So let's do that now!
+Our first Hello World example was great and all, but while the console is extremely helpful for debugging, we actually want to put things in the browser, don't we? So let's do that now!
 
-To be able to access our code from a webbrowser we will need a server. The standard-server for NodeJS is ExpressJS, so that's what we will be using as well. From within your project-directory run:
-
+To be able to access our code from a webbrowser we will need a server. The standard-server for NodeJS is ExpressJS, so that's what we will be using as well. We install it using npm from within your project-directory:
 ```sh
 npm install express
 ```
 
-You might not have noticed, but next to installing express this little command created a file called `package-lock.json` in your project-folder. We will cover what that's all about and why it's actually really great in a separate chapter.
-
-For now we just override our `server.js` with toe following piece of code:
+Now we just completely override our `server.js` with the following piece of code:
 ```js
-// Include a bunch of stuff
+// Include express
 var express = require('express')
+
+// Create an instance
 var app = express();
+
+// Create the server
 var http = require('http').Server(app);
 
-// This section is responsible to handle requests to localhost:8080
+// Take requests to our server-root and answer by sending back "Hello World!"
 app.get('/', function(req, res) {
     res.send('Hello World!');
 });
 
-// Start a server that listens to port 8080
+// Start the server on port 8080
 http.listen(8080, function() {
   console.log('listening on *:8080');
 });
 ```
 
-After executing
+Fire up the server (if not still running) using
 ```
-node server.js
+npm start
 ```
 
-we go to our browser, visit localhost:8080, check out all the cool things that are happening and sit in awe. Well, it's really just text so far, so don't waste your time waiting for something special to come up here^^ - but don't worry, there are special things to come!
+then open your browser, visit [localhost:8080](localhost:8080), check out all the cool things that are happening and be amazed!  
+Well, it's really just text so far, so don't waste your time waiting for something special to come up here^^ - but don't worry, there are special things to come!
 
 ## How to structure a NodeJS-Project
-Before we go any further, let's have a quick look into the structure of a NodeJS-Project. When you search the web for suggestions on that one, you will be flooded with a miriad of opinions on what's the best way to organize your code. To be honest, I don't claim perfection for my approach. I simply took the best out of all that I could find on this topic and what I came up with works great for me. So in the end you're getting just another opinion here^^. Feel free to go out there and find your own way - just make sure that you actually DO have any sort of organization in your project and don't just throw everything in one folder.
+Before we go any further, let's have a quick look into the general structure of a NodeJS-Project. When you search the web for suggestions on that, you will be flooded with a miriad of opinions on what's the best way to organize your code. To be honest, I don't claim perfection for my approach. I simply took the best out of all that I could find on this topic and what I came up with works great for me. So in the end you're getting just another opinion here^^. Feel free to go out there and find your own way - just make sure that you actually DO have any sort of organization in your project and don't just throw everything in one folder.
 
-So, without further ado, here's how I'm doing it:
+For the sake of this tutorial, we'll be using the following structure:
 
 project/  
 |-- config/  
@@ -100,7 +192,7 @@ This is the starting point of your application. It's what you call when you fire
 ## Working with HTML
 So far we only sent plain text to the browser. Already kind of exciting but we want to be able to serve really cool HTML, don't we?! Let's go do that right now!
 
-In our `views/` directory we add a file called `index.html` with the following content:
+In our `views/` directory we add a file called `index.html`:
 ```html
 <!DOCTYPE html>
 <head>
@@ -115,24 +207,22 @@ In our `views/` directory we add a file called `index.html` with the following c
 Now we modify our `server.js` and replace the old routing with this one:
 ```js
 app.get('/', function(req, res) {
+    // This time don't send plain text, but this file
     res.sendFile('index.html', {root: 'views'});
 });
 ```
 
 This tells the express-server: "If a visitor comes to our website, show him the `index.html` from folder `views/`"
 
-Start the server via
-```
-node server.js
-```
+Check it out yourself on [localhost:8080](localhost:8080)!
 
-and navigate to [localhost:8080](localhost:8080) in the browser.  
-We are greeted by a nice "Hello World!" again but this time it's not plain text but some really cool HTML \*wooow\*
+We are greeted with a nice "Hello World!" again but this time it's not plain text but some really cool HTML \*wooow\*  
+To make this even more amazing, let's go ahead and add some design to our page!
 
 ## Adding CSS and JavaScript
-Even if that HTML-Hello-World was very cool, it does still look a little boring, so let's add some styling.
+Even if our HTML-Hello-World is very cool, it does still look a little boring. Time to add some styling!
 
-In our `public/` folder we first add another folder called `css/`. In there we create a file `design.css` with the following content:
+In our `public/` folder we first add subfolder called `css/`. In there we create a file `design.css` with the following content:
 ```css
 h1 {
     color: red;
@@ -142,7 +232,7 @@ h1 {
 We reference this file in our `views/index.html` as we normally would:
 ```html
 <head>
-    <link rel="stylesheet" type="text/css" href="css/design.css">
+    <link rel="stylesheet" type="text/css" href="/css/design.css">
 </head>
 ```
 
@@ -152,71 +242,160 @@ To do this we add this to our `server.js` somewhere between the variable declara
 app.use(express.static(__dirname + '/public'));
 ```
 
-\_\_dirname is a NodeJS-variable that gives us the absolute path of the parent-directory of the file it is called in.  
+\_\_dirname is a NodeJS-variable that gives us the absolute path of the parent-directory of the file it is called in (meaning its value is different depending on the file).  
 Not hardcoding the path to our project allows it to be portable between different systems.
 
 Start the server, fire up the browser and look at this magnificent red!
 
 Now that express already knows where our public files are, including JavaScript in our `index.html` is very easy.  
-For the sake of a clear structure I recommend putting your JavaScript-files into the to-be-created folder `public/js/`
-
-Reference a JS-file in there like this:
-```html
-<script src="js/my_script.js" type="text/javascript"></script>
-```
-
-Since this is not a tutorial for CSS or (client-side) JavaScript, I will leave it to you to get crazy with awesome designs and amazing functions.
-
-## Handling requests
-GET, POST
-To-Do...
-
-## Routing
-There are several different ways to implement routing in ExpressJS
-
-###### Basic
-The easiest way to implement routing is to just put the following code in your `server.js`
+For the sake of a clear structure I recommend putting your JavaScript-files into a designated folder as well.  
+Create a file `main.js` inside the to-be-created fodler `public/js/`:
 ```js
-// http://localhost:8080 displays index.html
-app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index.html');
-});
+alert("I. AM. JavaScript!");
+```
 
-// http://localhost:8080/page displays page.html
-app.get('/page', function(req, res){
-    res.sendFile(__dirname + '/page.html');
+Reference it in the `index.html`:
+```html
+<body>
+    <!-- All other code -->
+    <script src="js/main.js" type="text/javascript"></script>
+</body>
+```
+
+You might want to disable the alert after you checked that it actually works, because it would be rather annoying to have this popping up throughout the rest of this tutorial.
+
+Since the scope of this tutorial is NodeJS, we won't be covering CSS or (client-side) JavaScript more than necessary. I will leave it to you to get crazy with awesome designs and amazing functions.
+
+## Basic routing
+So far we've only set up a single landing page. In some cases this is sufficient, but usually you might want to have other pages on your website as well.
+To demonstrate how this works with Node and Express, we will prepare a nice little login form.
+
+For that we need a file `views/login.html` with the following content:
+```html
+<!DOCTYPE html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="login" method="post">
+        <input type="text" name="username" placeholder="Username" />
+        <input type="password" name="password" placeholder="Password" />
+        <button>Login</button>
+    </form>
+</body>
+</html>
+```
+
+Only basic HTML there. We have a form containing two input fields named 'username' and 'password'. Clicking 'Login' will not result in anything right now, because our server doesn't know how to handle it yet.
+This chapter focusses on displaying, we'll add functionality in the next one.
+
+Despite the `login.html` being in the same directory as the `index.html`, express wouldn't know what to do with it, so we need to tell it.
+For that we add another routing-rule after the one handling requests to '/':
+```js
+app.get('/login', function(req, res) {
+    res.sendFile('login.html', {root: 'views'});
 });
 ```
 
-###### Advanced
-Since the basic approach can make your server.js unreadable in bigger projects, it's usually better to handle routing in a dedicated place
+Fairly straight forward compared to the other rule. This one listens to localhost:8080/login and returns our `views/login.html` upon request.
+Try it - go to [localhost:8080/login](localhost:8080/login) and check out our new login-form! Not very pretty, but functional - and since you already know how to add styling to your page, knock yourselves out and make this the best-looking login-screen the world has ever seen!
+You can also play around and add more HTMLs and more routes - you'll see that it's not all that complicated to add new pages.
 
-Create a routes.js in your project-root with the following content:
+Just as a sidenote: while adding all your routes to the `server.js` works perfectly well for small pages with only a couple of routes, things get messy very quickly when your site starts to grow.
+For now we can work with this approach, but I will show you a better way of organizing our routes in a later chapter.
 
+## Processing user input
+Displaying a login-screen is one thing, but it doesn't help us all that much if we can't process the user's input, right?!
+Let's add this feature now!
+First, we need to install another package that allows us to extract data from POST-requests:
+```sh
+npm install body-parser
+```
+
+We need to include the body-parser in our `server.js` so we can use it:
+```js
+var express = require('express')
+var app = express();
+var http = require('http').Server(app);
+// Include body-parser
+var bodyParser = require('body-parser');
+
+// Tell express to use body-parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.get('/', function(req, res) {
+    res.sendFile('index.html', {root: 'views'});
+});
+// ...
+```
+
+With this in place we can add yet another routing-rule in our `server.js`:
+```js
+app.post('/login', function(req, res) {
+    console.log("Username: " + req.body.username);
+    console.log("Password: " + req.body.password);
+    res.redirect('/');
+});
+```
+
+What are we doing here? We're telling express to listen for POST-requests to localhost:8080/login. From the body of those requests we're extracting 'username' and 'password' (since that's what we named our <input>-Elements in `login.html`). Check out your console to see both of them displayed there. Then we're redirecting the user to our landing page.
+We can now process this information however we like. Proper authentication would be nice, right? Don't worry, we'll get to that in a little bit!
+
+## Advanced Routing
+As we've already learnt, the basic approach to routing can make our `server.js` unreadable in bigger projects. In this chapter we'll get to know a slightly better way to do it.  
+To keep our `server.js` nice and clean, it's usually better to handle routing in a dedicated place
+
+For that we create a `routes.js` in our project-root with the following content:
 ```js
 var express = require('express');
 var router = express.Router();
 
 router.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile('index.html', {root: 'views'});
 });
 
-router.get('/page', function(req, res) {
-    res.sendFile(__dirname + '/page.html');
+router.get('/login', function(req, res) {
+    res.sendFile('login.html', {root: 'views'});
+});
+
+router.post('/login', function(req, res) {
+    console.log("Username: " + req.body.username);
+    console.log("Password: " + req.body.password);
+    res.redirect('/');
 });
 
 module.exports = router;
 ```
-In `server.js` add the following
+
+Notice that the routes themselves are just copied and pasted with 'app' being replaced by 'router'
+
+Now we have to remove all the routes from our `server.js` and tell it to use our new `routes.js`.  
+The final result will look like this:
 ```js
-// Include the router
+// Include a bunch of stuff
+var express = require('express')
+var app = express();
+var http = require('http').Server(app);
+var bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Include our router-file
 var routes = require('./router.js');
 
 // Let it handle all requests
 app.use('/', routes);
+
+// Start a server that listens to port 8080
+http.listen(8080, function() {
+  console.log('listening on *:8080');
+});
 ```
 
-While this is already better and makes the server.js a lot more readable, we would still end up with one huge file for all the requests  
+While this is already a lot better and makes the `server.js` a lot more readable, we would still end up with one huge file for all the requests.  
 This is where controllers come in...
 
 ## Controllers
@@ -264,39 +443,6 @@ app.use(require('./controllers'));
 ```
 
 That last part will find the index.js in the controllers-folder and with it have access to all the routes
-
-## Using npm
-```
-npm init
-```
-This will create a package.json based on your inputs
-
-The package.json holds all of your project's dependencies (if you install them with the --save option)
-
-So on a later re-install you can just use
-```sh
-npm install
-```
-to have everything installed automatically
-
-#### Startup script
-Tell npm what to do to start your server
-```js
-"scripts": {
-    "start": "node server.js"
-}
-```
-Now anyone can simply call
-```sh
-npm start
-```
-without having to figure out which file starts your server
-
-## Install plugins
-Nodemon restarts the server on file changes
-```
-npm install -g nodemon
-```
 
 ## Socket.IO
 Socket.IO provides WebSockets
@@ -453,7 +599,7 @@ module.exports = mongoose.model('users', UserSchema)
 
 Frankly, that's not too much code but it would still clutter our files if we were to use this in multiple places.
 
-If we want to work with the result of this method, we must provide a callback-function because findOne() works asynchronously and returns 'undefined' right away before processing.
+If we want to work with the result of this method, we must provide a callback-function because findOne() works asynchronously and returns 'undefined' immediately before processing.
 
 You access this functionality by using merely four lines of code:
 ```js
@@ -657,7 +803,7 @@ function isLoggedIn(req, res, next) {
 module.exports = router;
 ```
 
-## Access session with SocketIO
+## Accessing the session with SocketIO
 [The docs](https://www.npmjs.com/package/express-socket.io-session)
 
 ```sh
