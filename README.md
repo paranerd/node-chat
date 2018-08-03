@@ -340,11 +340,12 @@ app.post('/login', function(req, res) {
 });
 ```
 
-What are we doing here? We're telling express to listen for POST-requests to localhost:8080/login. From the body of those requests we're extracting 'username' and 'password' (since that's what we named our <input>-Elements in `login.html`). Check out your console to see both of them displayed there. Then we're redirecting the user to our landing page.
+What are we doing here? We're telling express to listen for POST-requests to localhost:8080/login. From the body of those requests we're extracting 'username' and 'password' (since that's what we named our &lt;input&gt;-Elements in `login.html`). Check out your console to see both of them displayed there. Then we're redirecting the user to our landing page.
 We can now process this information however we like. Proper authentication would be nice, right? Don't worry, we'll get to that in a little bit!
 
 ## Advanced Routing
-As we've already learnt, the basic approach to routing can make our `server.js` unreadable in bigger projects. In this chapter we'll get to know a slightly better way to do it.  
+As we've already learnt, the basic approach to routing can make our `server.js` unreadable in bigger projects. In this chapter we'll get to know a slightly better way to do it (spoiler alert: there's an EVEN better version, but we'll get to that later).
+
 To keep our `server.js` nice and clean, it's usually better to handle routing in a dedicated place
 
 For that we create a `routes.js` in our project-root with the following content:
@@ -399,116 +400,202 @@ While this is already a lot better and makes the `server.js` a lot more readable
 This is where controllers come in...
 
 ## Controllers
-Controllers allow organizing your site's routing into smaller, more maintainable chunks
+Controllers allow organizing your site's routing into smaller, more maintainable chunks.  
+Now we can finally use that `controllers/` folder!
 
-First create `controllers/index.js`
+What this system does is separating our routes into controllers, each with a specific job.  
+For example, in a webshop you might have one controller for handling requests to articles, another for account-management and yet another for customer-support.
 
+Let's create our first controller `controllers/users.js`!
 ```js
 var express = require('express');
 var router = express.Router();
 
-// Include all your controllers here
+router.get('/login', function(req, res) {
+    res.sendFile('login.html', {root: 'views'});
+});
+
+router.post('/login', function(req, res) {
+    console.log("Username: " + req.body.username);
+    console.log("Password: " + req.body.password);
+    res.redirect('/');
+});
+
+module.exports = router;
+```
+
+This should all look very familiar, as it's just regular "advanced routing" that we saw in the previous chapter.
+
+Next up we create `controllers/index.js`
+```js
+var express = require('express');
+var router = express.Router();
+
+// Including all our controllers here
 router.use('/user', require('./user'));
 
 // Handle "top-level-requests"
 router.get('/', function(req, res) {
-    res.send('Home page');
+    res.sendFile('index.html', {root: 'views'});
 });
 
 module.exports = router;
 ```
 
-Nothing new in there, just regular "advanced routing" that we saw in the Routing-section
+This will be responsible for including the user-router. To do that it requires our `user.js` (the file-extension can be omitted, NodeJS is that smart!) and binds it to all requests coming in for 'localhost:8080/user'
+That is important to remember as the route the user-controller is taking care of is NOT 'localhost:8080/login' but rather 'localhost:8080/user/login'. Might be a bit confusing at first, but it's useful down the road.
 
-This will be responsible for loading all of the controllers/routers in this folder and thus it only requires one line in the `server.js` to enable this new routing system
+In addition, the `index.js` will handle all the requests that we don't have a controller for (such as the landing page).
 
-Next add a file `controllers/user.js`
-
+To let express know about the change in our routing-system, we edit our `server.js` like so:
 ```js
-var express = require('express');
-var router = express.Router();
+// Include our router-file
+//var routes = require('./router.js');
 
-// This one gets requests for localhost:8080/user (rather than localhost:8080)
-// because of how it was included in the controllers/index.js
-router.get('/', function(req, res) {
-    res.send("This is the users root");
-});
+// Let it handle all requests
+//app.use('/', routes);
 
-module.exports = router;
-```
-
-```js
 // Include controllers
 app.use(require('./controllers'));
 ```
 
-That last part will find the index.js in the controllers-folder and with it have access to all the routes
+When requiring a folder, NodeJS will by default look for an `index.js` in it, so we don't have to specify the filename here.  
+Because we're including the user-controller in that file, this is sort of like a requirements-chain and we end up with express knowing about all routers.
 
-## Socket.IO
-Socket.IO provides WebSockets
-```
-npm install --save socket.io
-```
-
-[Cheatsheet](https://socket.io/docs/emit-cheatsheet/)
-```js
-io.on('connection', function(socket) {
-    console.log('a user connected');
-    socket.broadcast.emit('broadcast', socket.id + ' connected');
-    io.emit('system', 'hello');
-
-    socket.on('disconnect', function() {
-        console.log(socket.id + ' disconnected');
-        socket.broadcast.emit('broadcast', socket.id + ' disconnected');
-    });
-
-    socket.on('chat message', function(msg) {
-        socket.broadcast.emit('chat message', msg);
-    });
-});
-```
+Check it out: go to [localhost:8080/user/login](localhost:8080/user/login) and see that... well... nothing really changed visually.  
+But under the hood we got a lot cleaner, a lot more structured code that will be way more maintainable when working on bigger projects and with other developers.
 
 To-Do...
 
-## MongoDB
-Install the linux-package
-```sh
-sudo apt install mongodb
+## Working with a database
+#### Quick introduction to MongoDB
+MongoDB is a so called NoSQL-Database (in contrast to SQL-Databases like MySQL). Unlike traditional databases these don't require fixed table relations or a pre-defined schema which makes them more flexible to work with.  
+While NoSQL is not out there to replace SQL there are use cases where they're better suited for the job.
+Using MongoDB with NodeJS is great because it works extremely well with JavaScript. Entries in a MongoDB-Database are called 'documents' which are JSON-Objects in binary form (called BSON). This makes exchanging data between code and database almost seemless. A document to store a user might look like this:
+```json
+{
+    "username": "John",
+    "password": "a789dbe97890ffc"
+}
+```
+Documents are grouped in collections, so we can have a collection 'users' containing all the... well... users^^
+The flexible, schema-less nature of MongoDB enables us to simply add another attribute (e.g. 'interests') to one document without affecting all other documents. In MySQL this would require a migration and potential downtime of the entire database.  
+In MongoDB it's perfectly okay for documents to have a varying set of attributes, which is just not possible in MySQL.
+
+MongoDB allows for easier mapping of real world objects to a database-entry because related information is stored together, which is especially great for object oriented programming:
+```json
+{
+    "username": "John",
+    "password": "a789dbe97890ffc",
+    "address": {
+        "street": "5th Ave",
+        "number": 350,
+        "zip": "NY 10118"
+    },
+    "interests": [
+        "reading",
+        "biking",
+        "hiking"
+    ]
+}
 ```
 
-Start the server
+For a more in-depth introduction to MongoDB as well as a comparison between MongoDB and MySQL, check out [this great article](https://www.mongodb.com/compare/mongodb-mysql)
+
+#### Setting up MongoDB
+First we need the linux-packages
+```sh
+sudo apt install mongodb mongodb-clients
+```
+This will install the MongoDB-Server as well as a client to be able to check our database from the command line
+
+Then we start the server
 ```sh
 sudo service mongodb start
 ```
 
 Install the node-package
 ```sh
-npm install mongodb --save
+npm install mongodb
 ```
 
+#### Using MongoDB
+
+This is the code we add to our `server.js` to connect to the Mongo-Database:
 ```js
+// Include the mongodb-package
 var mongo = require('mongodb').MongoClient;
-var mongoUrl = 'mongodb://localhost:27017/users';
+
+// Connect to the mongodb-server that listens on port 27017
+var mongoUrl = 'mongodb://localhost:27017';
 
 mongo.connect(mongoUrl, function(err, db) {
+    // Throw an error if something went wrong
     if (err) throw err;
+
+    // Otherwise we're good
     console.log("MongoDB connected");
 
-    var dbo = db.db('chat');
+    // Use the database 'node_tutorial'
+    // It doesn't exist yet, but don't worry, mongodb automatically creates it for us
+    var dbo = db.db('node_tutorial');
 
-    dbo.collection('users').find({name: 'test'}}, function(dbErr, dbRes) {
-        if (dbErr) throw dbErr;
+    // Create a new user
+    var user = {
+		username: "John",
+		password: "a789dbe97890ffc"
+	};
 
-        if (dbRes) {
-            console.log("User 'test' exists");
-        }
-        else {
-            console.log("User 'test' does not exist");
-        }
-    });
+    // Insert it into the collection 'users' (mongodb creates this on the fly as well)
+	dbo.collection('users').insertOne(user, function(err, res) {
+		if (err) throw err;
+
+		console.log("inserted");
+	});
+
+    // Close the database-connection
     db.close();
 });
 ```
+
+Seems like a lot of code, but it's not that complicated. This is a good example of MongoDB integrating well with JavaScript. Passing a JSON-object that JavaScript understands to the database is just super easy.
+
+Querying documents is not exactly rocketscience either:
+```js
+// Give me all the users with username 'John'
+dbo.collection('users').find({username: 'John'}}, function(err, res) {
+    if (err) throw err;
+
+    if (res) {
+        console.log("User exists");
+    }
+    else {
+        console.log("User does not exist");
+    }
+});
+db.close();
+```
+
+Aside from code it's sometimes nice to have some sort of 'direct' access to our database, e.g. for degugging. To do this, we open another terminal window and connect to the MongoDB-Server
+```sh
+mongo
+```
+
+We tell the server that we want to access our 'node_tutorial' database
+```sh
+use node_tutorial
+```
+
+Inside this database we can now more or less use the same command that we used in JavaScript to get our newly inserted user:
+```sh
+db.users.find({username: 'John'})
+```
+
+For more information about querying MongoDB, check out [the documentation](https://docs.mongodb.com/manual/crud/)
+
+If you're coming from a MySQL background, you will find this [mapping of SQL-commands to MongoDB](https://docs.mongodb.com/manual/reference/sql-comparison/) helpful.
+
+We've covered the most basic way NodeJS can communicate with MongoDB and it works perfectly fine. But as it can get a little verbose and we love clean code, we choose to do it slightly different...
 
 ## Mongoose
 Using basic Mongo in our project is definitely doable but not very efficient in terms of maintainability. As you can see there's a lot of boilerplate code required for even basic tasks as checking for a user.
@@ -524,7 +611,7 @@ With mongoose you create a model that acts as a middleman between your applicati
 First we need a connection to the Mongo-database. We establish that in `config/database.js`
 ```js
 var mongoose = require('mongoose');
-mongoose.connect(`mongodb://127.0.0.1:27017/chat`)
+mongoose.connect(`mongodb://127.0.0.1:27017/node_tutorial`)
 ```
 
 Next up is the model. We are creating a so called 'schema' for users with only the most basic attributes of username and password each of type String. You can get as complex as you wish with this, have nested attributes and a whole lot of other types. [Check out the documentation](http://mongoosejs.com/docs/schematypes.html) for more information.
@@ -801,6 +888,30 @@ function isLoggedIn(req, res, next) {
 }
 
 module.exports = router;
+```
+
+## Socket.IO
+Socket.IO provides WebSockets
+```
+npm install --save socket.io
+```
+
+[Cheatsheet](https://socket.io/docs/emit-cheatsheet/)
+```js
+io.on('connection', function(socket) {
+    console.log('a user connected');
+    socket.broadcast.emit('broadcast', socket.id + ' connected');
+    io.emit('system', 'hello');
+
+    socket.on('disconnect', function() {
+        console.log(socket.id + ' disconnected');
+        socket.broadcast.emit('broadcast', socket.id + ' disconnected');
+    });
+
+    socket.on('chat message', function(msg) {
+        socket.broadcast.emit('chat message', msg);
+    });
+});
 ```
 
 ## Accessing the session with SocketIO
