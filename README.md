@@ -85,7 +85,7 @@ Checking your `package.json` you can see that there is a new section 'dependenci
 }
 ```
 
-By default npm adds every package you install to that section. This is especially great when working with a lot of packages.  
+By default npm adds every package you install to that section. This is especially great when working with lots of packages.  
 The `node_modules/` folder can get quite big and you don't necessarily want it in your backup, your version management or have to move it around to everyone that wants a copy of your code.
 
 With the `package.json` in place you can omit the `node_modules/` entirely and a simple call to
@@ -463,13 +463,176 @@ When requiring a folder, NodeJS will by default look for an `index.js` in it, so
 Because we're including the user-controller in that file, this is sort of like a requirements-chain and we end up with express knowing about all routers.
 
 Check it out: go to [localhost:8080/user/login](localhost:8080/user/login) and see that... well... nothing really changed visually.  
-But under the hood we got a lot cleaner, a lot more structured code that will be way more maintainable when working on bigger projects and with other developers.
+But under the hood we got a lot cleaner, way more structured code that will be way more maintainable when working on bigger projects and with other developers.
 
-To-Do...
+## Organizing views
+So far we only have to manage two views - no big deal. But imagine having dozens of different pages, which is not at all unusual. Having all those views in one single views-folder would be a huge mess and very difficult to manage and maintain.  
+Therefore it's usually better to use sub-folders to organize our views.
+
+Following the pattern of our controllers, we create two folders: `views/main/` and `views/user/`. Similar to the `controller/index.js` the `views/main/` will contain all views that we don't have a specific controller for.
+
+We move our `views/index.html` to `views/main/` and `views/login.html` to `views/user/` respectively. For our controllers to find them we need to update their paths.
+`controllers/index.js`:
+```js
+router.get('/', function(req, res) {
+	res.sendFile('index.html', {root: 'views/main'});
+});
+```
+
+`controllers/user.js`:
+```js
+router.get('/login', function(req, res) {
+    res.sendFile('login.html', {root: 'views/user'});
+});
+```
+
+Checking out the changes in our browser, hopefully we won't be noticing any differences as they were purely 'under the hood' for the sake of clean code, efficient development and our sanity when managing growing projects.
+
+## Working with Templates
+So far our pages have been very static, meaning we just deliver HTML without any dynamic content whatsoever. What we need is an easy way for our server to send data to the client. This is where templates come in.
+
+There are many template engines available. Some of the more popular ones are:
+- [Handlebars](https://handlebarsjs.com/)
+- [Pug (Jade)](https://pugjs.org/api/getting-started.html)
+- [EJS](https://www.npmjs.com/package/ejs)
+- [Dust](http://www.dustjs.com/)
+
+Since I found handlebars to be the most comprehensible and easiest for a beginner to understand, we will use it in this tutorial. Feel free to check out the others to find the engine that works best for you.
+
+As almost always with new features, we first install a package:
+```sh
+npm install express-hbs
+```
+
+We then tell our `server.js` that we want to use this package
+```js
+var hbs  = require('express-hbs');
+```
+
+For it to be working properly, we need to add some more details:
+```js
+// Create a handlebars-instance
+app.engine('hbs', hbs.express4({extname: '.hbs'}));
+// Set it to be the view (template) engine
+app.set('view engine', 'hbs');
+// Tell it where our views are located
+app.set('views', __dirname + '/views');
+```
+
+The default extension for handlebars-files is '.handlebars'. That's pretty verbose, so we change that and tell the engine to look for files ending with '.hbs' instead. Not mandatory at all, but a little easier on the eyes.
+
+#### Templates in action
+For our template engine to recognize our view files as such we first need to rename them according to our chosen extension:
+- `views/main/index.html` -> `views/main/index.hbs`
+- `views/user/login.html` -> `views/user/login.hbs`
+
+One great thing about handlebars over the also very popular pug - at least in my opinion - is that it doesn't require rewriting HTML-markup. So we basically use standard HTML and add pieces handlebars in some places making it easily readable even for other developers not familiar with handlebars.
+
+To use handlebars to display a view we need to modify our routing.
+First in `controllers/index.js`
+```js
+router.get('/', function(req, res) {
+    res.render('main/index', {greeting: 'Hello Again!'});
+});
+```
+
+We're replacing 'sendFile' with 'render'. While their syntaxes look very alike, they're behaving quite differently.
+
+Most noticably we don't specify the parent-folder of our view as 'root' in the curly brackets anymore. Instead we defined the root to **all** our views in the `server.js` and are passing the relative path to our view based on that root as the first parameter to 'render()'.
+
+The second parameter is where the actual magic happens. Here we're passing a variable 'greeting' with its value to be used in our HTML
+
+Changes in `controllers/user.js` accordingly:
+```js
+router.get('/login', function(req, res) {
+    res.sendFile('user/login', {});
+});
+```
+
+We're not providing any variables here, to we leave the curly brackets empty.
+
+Refreshing the browser on [localhost:8080](localhost:8080) won't show any differences because it doesn't use the passed variable yet. To change that, let's modify our &lt;body&gr;-section in `views/main/index.hbs`:
+```html
+<body>
+    <h1>Hello World!</h1>
+    <h2>{{greeting}}</h2>
+</body>
+```
+
+The double curly braces (which look like the handlebars of a motorbike tilted 90 degrees - hence the name) are handlebars-syntax. It tells the template engine to replace this part with the value of the variable passed we passed it. If we wouldn't have passed this variable, handlebars would replace it with an empty string.
+
+There's more to learn about handlebars that would be beyond the scope of this NodeJS-Tutorial. If you're interested, check out [the projects homepage](https://handlebarsjs.com/) for more information.
+
+## Working with sessions
+Sessions are a simple way of persisting information between page requests. They make it easy to save a value in some part of your website and retrieve that value at a completely different place without having to manually send it there.
+
+A session is nothing magical, just an array of key-value-pairs saved on the server accessed by the browser via a Session-ID which is stored in a cookie. The Session-ID enables us to have different sessions for different users of our website at the same time.
+
+To use sessions in our express-server, we need another package:
+```sh
+npm install express-session
+```
+
+Setting up the session in our `server.js` is super easy. First we need to tell it that we're using this new package now:
+```js
+var session = require('express-session');
+```
+
+Then we give it some details about how we want it to be set up:
+```js
+app.use(session({
+	secret: 'mylittlesecret',
+	resave: true,
+	saveUninitialized: false,
+	cookie: { maxAge: 3600 }
+}));
+```
+
+Let's break this down so we know what's going on:
+
+The 'secret' parameter is used to sign the Session-ID-Cookie to verify access. In the real world you might want to use something a little (well, actually A LOT^^) stronger than what we use here.
+
+Setting 'resave' to true forces the session to be saved back to session store even if the session was not modified during a request. We would normally set this to false but as I happen to know of a future usecase that requires it to be true, we will use this setting for now.
+
+Having 'saveUninitialized' set to true would result in the session being saved to the store even if has not been initialized yet (we did not yet modify it in any way). This would cause querying the session-store more than necessary and waste precious space on disk.
+
+A 'maxAge' of 3600 for our cookie will invalidate the session after an hour (a kind of auto-logout).
+
+Apart from 'cookie' these are all required options, so you have to give them a value. There's a bunch of others that you can check out in the [documentation](https://www.npmjs.com/package/express-session)
+
+Now let's see a session in action, shall we?!
+
+In our `controllers/user.js` we modify our POST-route to login as follows:
+```js
+router.post('/login', function(req, res) {
+	req.session.username = req.body.username;
+    res.redirect('/');
+});
+```
+
+We access the session through the request-object to store the passed username in it.
+
+To display the username, we change our `controllers/index.js`
+```js
+router.get('/', function(req, res) {
+	res.render('main/index', {username: req.session.username});
+});
+```
+
+Finally, we adjust our template:
+```html
+<body>
+    <h1>Hello {{username}}</h1>
+</body>
+```
+
+**That's all!**
+
+Now we go to [localhost:8080/user/login](localhost:8080/user/login), enter a username, hit 'Login' and lose our minds to see that our website knows who we are!
 
 ## Working with a database
 #### Quick introduction to MongoDB
-MongoDB is a so called NoSQL-Database (in contrast to SQL-Databases like MySQL). Unlike traditional databases these don't require fixed table relations or a pre-defined schema which makes them more flexible to work with.  
+MongoDB is a so-called NoSQL-Database (in contrast to SQL-Databases like MySQL). Unlike traditional databases these don't require fixed table relations or a pre-defined schema which makes them more flexible to work with.  
 While NoSQL is not out there to replace SQL there are use cases where they're better suited for the job.
 Using MongoDB with NodeJS is great because it works extremely well with JavaScript. Entries in a MongoDB-Database are called 'documents' which are JSON-Objects in binary form (called BSON). This makes exchanging data between code and database almost seemless. A document to store a user might look like this:
 ```json
@@ -606,7 +769,7 @@ Mongoose is a wrapper for MongoDB that makes it a lot easier to handle database-
 npm install mongoose
 ```
 
-With mongoose you create a model that acts as a middleman between your application and the database. It adds a layer of abstraction so that you don't have to deal with database-queries throughout your entire code. Instead we choose the object-oriented-approach of using models and methods to make the code much more readable and maintainable.
+Mongoose uses so-called models that act as middlemen between the application and the database. It adds a layer of abstraction so that we don't have to deal with database-queries throughout your entire code. Instead we choose the object-oriented-approach of using models and methods to make the code much more readable and maintainable.
 
 First we need a connection to the Mongo-database. We establish that in `config/database.js`
 ```js
@@ -614,7 +777,7 @@ var mongoose = require('mongoose');
 mongoose.connect(`mongodb://127.0.0.1:27017/node_tutorial`)
 ```
 
-Next up is the model. We are creating a so called 'schema' for users with only the most basic attributes of username and password each of type String. You can get as complex as you wish with this, have nested attributes and a whole lot of other types. [Check out the documentation](http://mongoosejs.com/docs/schematypes.html) for more information.
+Next up is the model. Finally we're using that `models/` folder! We are creating a so-called 'schema' for users with only the most basic attributes of username and password each of type String. You can get as complex as you wish with this, have nested attributes and a whole lot of other types. [Check out the documentation](http://mongoosejs.com/docs/schematypes.html) for more information.
 
 For the purpose of this tutorial these two attributes will suffice. The following piece of code goes in `models/user.js`
 ```js
@@ -718,15 +881,8 @@ User.find({}, function(err, users) {
 });
 ```
 
-## Templates
-Handlebars is a template engine
-```
-npm install express-hbs --save
-```
-
-To-Do...
-
 ## Authentication
+The so-called 'Login-System' that we put up so far isn't quite... secure, to say the least. The way it is implemented now, anyone could come by, 'login' and have an account created for him
 ```sh
 npm install passport passport-local express-session bcrypt-nodejs
 ```
