@@ -1,23 +1,31 @@
 <!doctype html>
 <html>
-<head>
+<head data-username='{{username}}'>
     <title>Node chat</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
     <link rel="stylesheet" type="text/css" href="/css/design.css">
 </head>
 <body>
+    <header>
+        NodeJS Chat
+    </header>
     <div class="center">
-        <div id="chat" style="padding: 1%; display: flex; flex-direction: column;">
-            <ul id="messages" style="height: 450px; overflow: auto; flex: 1;"></ul>
+        <div id="chat">
+            <ul id="messages"></ul>
 
-            <form action="" style="width: 98%; display: flex; flex-direction: row;">
-                    <input id="msg" autocomplete="off" style="flex: 1; padding: 15px; background: white; border: none; height: 30px; border-radius: 15px;" placeholder="Write message..."/>
-                    <span style="background: green; color: white; height: 30px; width: 30px; border-radius: 15px; text-align: center; line-height: 30px;" class="fa-stack fa-1.5x">
+            <form id="msg-form" action="">
+                    <input id="msg" autocomplete="off" placeholder="Write message..."/>
+                    <span id="send" class="fa-stack fa-1.5x">
                         <i class="fa fa-location-arrow"></i>
                     </span>
             </form>
         </div>
+    </div>
+
+    <div class="top-right">
+        <span>Hello {{username}}!</span>
+        <a href="/user/logout">(Logout)</a>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

@@ -56,8 +56,11 @@ io.on('connection', function(socket) {
     });
 
     socket.on('chat message', function(msg) {
-        socket.broadcast.emit('chat message', msg);
-        socket.handshake.session.sockettest = 'working';
+        socket.broadcast.emit('chat message', {username: socket.handshake.session.username, msg: msg});
+    });
+
+    socket.on('test message', function(msg) {
+        io.emit('test message', msg);
     });
 });
 

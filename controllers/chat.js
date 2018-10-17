@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/', isLoggedIn, function(req, res) {
-    res.render('chat/index', {});
+    res.render('chat/index', {username: req.session.username});
 });
 
 // route middleware to make sure a user is logged in
