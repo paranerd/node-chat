@@ -9,9 +9,9 @@ var db = require('./config/database');
 var passport = require('passport');
 var flash = require('connect-flash');
 var session = require('express-session')({
-    secret: 'mylittlesecret',
-    resave: true,
-    saveUninitialized: true
+	secret: 'mylittlesecret',
+	resave: true,
+	saveUninitialized: true
 });
 
 app.use(bodyParser.json());
@@ -37,31 +37,39 @@ app.use(require('./controllers'));
 
 // Setup sockets-io
 io.use(ioSession(session, {
-    autoSave: true
+	autoSave: true
 }));
 
 io.on('connection', function(socket) {
-    console.log(socket.handshake.session.username + " (" + socket.id + ") connected");
+	console.log(socket.handshake.session.username + " (" + socket.id + ") connected");
 
-    // Tell everyone who joined
-    socket.broadcast.emit('broadcast', socket.handshake.session.username + ' connected');
+	// Tell everyone who joined
+	socket.broadcast.emit('broadcast', socket.handshake.session.username + ' connected');
 
-    // Greet new user
-    socket.emit('system', 'hello ' + socket.handshake.session.username);
+	// Greet new user
+	socket.emit('system', 'hello ' + socket.handshake.session.username);
 
-    socket.on('disconnect', function() {
-        console.log(socket.handshake.session.username + ' disconnected');
-        socket.broadcast.emit('broadcast', socket.handshake.session.username + ' disconnected');
-        delete socket.handshake.session.username;
-    });
+	socket.on('disconnect', function() {
+		console.log(socket.handshake.session.username + ' disconnected');
+		socket.broadcast.emit('broadcast', socket.handshake.session.username + ' disconnected');
+		delete socket.handshake.session.username;
+	});
 
-    socket.on('chat message', function(msg) {
-        socket.broadcast.emit('chat message', {username: socket.handshake.session.username, msg: msg});
-    });
+	socket.on('chat message', function(msg) {
+		socket.broadcast.emit('chat message', {username: socket.handshake.session.username, msg: msg});
+	});
 
-    socket.on('test message', function(msg) {
-        io.emit('test message', msg);
-    });
+	socket.on('sound', function(msg) {
+		socket.broadcast.emit('sound', {chunk: msg.chunk})
+	});
+
+	socket.on('start', function(msg) {
+		socket.broadcast.emit('chat message', {username: socket.handshake.session.username, msg: 'Streaming...'});
+	});
+
+	socket.on('stop', function(msg) {
+		socket.broadcast.emit('stop');
+	});
 });
 
 // Start server

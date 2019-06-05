@@ -20,6 +20,43 @@ $(function() {
 	socket.on('chat message', function(msg) {
 		addMessage(msg.msg, msg.username);
 	});
+
+	/*var ws = new WebSocket('ws://localhost:8080/socket.io/?EIO=3&transport=websocket');
+
+	ws.onopen = function(e) {
+		ws.send(`42${ JSON.stringify(["testmessage", { command: "register" }]) }`, err => {
+			if (err) console.log("err", err);
+		});
+		console.log("opened");
+	}*/
+
+	let config = {
+		bufferSize: 2048
+	}
+	let streamer = new Streamer(config, socket);
+	let player = new Player(config, socket);
+
+	$("#listen").on('click', function() {
+		if (player.isPlaying()) {
+			$(this).find('i').removeClass("fa-volume-up").addClass("fa-volume-mute");
+			player.stop();
+		}
+		else {
+			$(this).find('i').removeClass("fa-volume-mute").addClass("fa-volume-up");
+			player.play();
+		}
+	});
+
+	$("#record").on('click', function() {
+		if (streamer.isRecording()) {
+			$(this).find('i').removeClass("fa-microphone-alt").addClass("fa-microphone-alt-slash");
+			streamer.stop();
+		}
+		else {
+			$(this).find('i').removeClass("fa-microphone-alt-slash").addClass("fa-microphone-alt");
+			streamer.record();
+		}
+	});
 });
 
 function addMessage(msg, username, type) {
