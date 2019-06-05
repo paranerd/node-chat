@@ -1,42 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Register | Chat</title>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/design.css">
+	<title>Register | Chat</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.0/css/all.css">
+	<link rel="stylesheet" type="text/css" href="/css/design.css">
 </head>
 <body>
-    <header>
-        NodeJS Chat
-    </header>
-    <div class="container">
-        <div id="register" class="col-sm-6 col-sm-offset-3">
-            <h1><span class="fa fa-sign-in"></span> Sign Up</h1>
+	<header>
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<a class="navbar-brand" href="#"><strong>NodeJS Chat</strong></a>
+		</nav>
+	</header>
+	<div class="container">
+		<div id="register" class="col-6 offset-3">
+			<h1><i class="fas fa-sign-in-alt"></i> Sign Up</h1>
 
-            <!-- show any messages that come back with authentication -->
-            {{#if message}}
-                <div class="alert alert-danger">{{message}}</div>
-            {{/if}}
+			<!-- Show any messages that come back with authentication -->
+			{{#if message}}
+				<div class="alert alert-danger">{{message}}</div>
+			{{/if}}
 
-            <!-- LOGIN FORM -->
-            <form action="register" method="post">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" class="form-control" name="username" placeholder="Username">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" class="form-control" name="password" placeholder="Password">
-                </div>
+			<!-- Registration form -->
+			<form action="register" method="post">
+				<div class="form-group">
+					<label>Username</label>
+					<input type="text" class="form-control" name="username" placeholder="Username">
+				</div>
+				<div class="form-group">
+					<label>Password</label>
+					<input type="password" class="form-control" name="password" placeholder="Password">
+				</div>
 
-                <button type="submit" class="btn btn-success btn-lg">Sign Up</button>
-            </form>
+				<button type="submit" class="btn btn-success btn-lg">Sign Up</button>
+			</form>
 
-            <hr>
+			<hr>
 
-            <p>Already have an account? <a href="/user/login">Login</a>!</p>
-        </div>
-    </div>
+			<p>Already have an account? <a href="/user/login">Login</a>!</p>
+		</div>
+	</div>
 </body>
 </html>

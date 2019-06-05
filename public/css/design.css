@@ -1,151 +1,83 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 body {
-    font: 13px Helvetica, Arial;
+	font: 13px Helvetica, Arial;
 }
 
-header {
-    position: absolute;
-    width: 100%;
-    height: 150px;
-    line-height: 150px;
-    font-size: 3rem;
-    text-align: center;
+.form-control:focus {
+	box-shadow: none;
 }
 
 #register,
 #login {
-    padding-top: 80px;
+	padding-top: 80px;
 }
 
 #chat {
-    padding: 1%;
-    width: 480px;
-    height: 480px;
-    background: #f5e9dc;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
+	padding: 1%;
+	width: 100%;
+	height: 480px;
+	border-radius: 5px;
+	border: 1px solid #555;
+	display: flex;
+	flex-direction: column;
 }
 
 #messages {
-    height: 450px;
-    width: 100%;
-    list-style-type: none;
-    overflow: auto;
-    flex: 1;
+	height: 450px;
+	width: 100%;
+	list-style-type: none;
+	overflow: auto;
+	flex: 1;
 }
 
 #messages li {
-    margin-top: 5px;
-    min-height: 30px;
+	margin-top: 5px;
+	min-height: 30px;
 }
 
 #messages li div {
-    padding: 5px;
-    min-width: 100px;
-    max-width: 300px;
-    color: white;
-    background: purple;
-    border-radius: 5px;
-    display: inline-block;
+	padding: 5px;
+	min-width: 100px;
+	max-width: 300px;
+	color: white;
+	background: purple;
+	border-radius: 5px;
+	display: inline-block;
 }
 
 #messages li.broadcast div,
 #messages li.system div {
-    background: grey !important;
+	background: grey !important;
 }
 
 #messages li.own {
-    text-align: right;
+	text-align: right;
 }
 
 .msg-text {
-    text-align: left;
+	text-align: left;
 }
 
 #messages li.own div {
-    background: green !important;
+	background: green !important;
 }
 
 #messages li span {
-    display: block;
+	display: block;
 }
 
 #messages li span.msg-time {
-    margin-left: 10px;
-    color: lightgrey;
-    text-align: right;
+	margin-left: 10px;
+	color: lightgrey;
+	text-align: right;
 }
 
 #messages li span.msg-user {
-    font-weight: bold;
-    text-align: left;
-}
-
-#msg-form {
-    width: 98%;
-    display: flex;
-    flex-direction: row;
-}
-
-#msg {
-    padding: 15px;
-    height: 30px;
-    flex: 1;
-    background: white;
-    border: none;
-    border-radius: 15px;
-}
-
-#send {
-    height: 30px;
-    width: 30px;
-    background: green;
-    color: white;
-    border-radius: 15px;
-    text-align: center;
-    line-height: 30px;
-}
-
-.top-right {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-.center {
-	position: absolute;
-	height: 100%;
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	overflow: auto;
-	align-items: center;
-}
-
-.center > * {
-	position: relative;
-}
-
-.center::before, .center::after {
-	content: '';
-	margin: auto; /* Make it push flex items to the center */
-}
-
-.center > * {
-	flex: 0 0 auto;
-  	margin: 40px 0 40px 0;
-}
-
-.center-hor {
-	position: relative;
-	width: 100%;
-	display: flex;
-	overflow: auto;
-	justify-content: center;
+	font-weight: bold;
+	text-align: left;
 }
