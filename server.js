@@ -1,5 +1,6 @@
 var express = require('express')
 var app = express();
+var compression = require('compression');
 var bodyParser = require('body-parser');
 var hbs  = require('express-hbs');
 var http = require('http').Server(app);
@@ -14,8 +15,17 @@ var session = require('express-session')({
 	saveUninitialized: true
 });
 
+app.use(compression({filter: shouldCompress}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+function shouldCompress(req, res) {
+	if (req.headers['x-no-compression']) {
+		return false;
+	}
+
+	return compression.filter(req, res);
+}
 
 // Include assets
 app.use(express.static(__dirname + '/public'));
