@@ -1,31 +1,31 @@
-var express = require('express')
-var app = express();
-var compression = require('compression');
-var bodyParser = require('body-parser');
-var hbs  = require('express-hbs');
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var ioSession = require("express-socket.io-session");
-var db = require('./config/database');
-var passport = require('passport');
-var flash = require('connect-flash');
-var session = require('express-session')({
+let express = require('express')
+let fs = require('fs');
+let compression = require('compression');
+let bodyParser = require('body-parser');
+let hbs  = require('express-hbs');
+let https = require('https');
+
+let privateKey = fs.readFileSync('config/server.key', 'utf8');
+let certificate = fs.readFileSync('config/server.crt', 'utf8');
+
+let app = express();
+let httpsServer = https.createServer({key: privateKey, cert: certificate}, app);
+
+let io = require('socket.io')(httpsServer);
+let ioSession = require("express-socket.io-session");
+let db = require('./config/database');
+let passport = require('passport');
+let flash = require('connect-flash');
+let session = require('express-session')({
 	secret: 'mylittlesecret',
 	resave: true,
 	saveUninitialized: true
 });
+let port = 8080;
 
 app.use(compression({filter: shouldCompress}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-function shouldCompress(req, res) {
-	if (req.headers['x-no-compression']) {
-		return false;
-	}
-
-	return compression.filter(req, res);
-}
 
 // Include assets
 app.use(express.static(__dirname + '/public'));
@@ -82,7 +82,15 @@ io.on('connection', function(socket) {
 	});
 });
 
+function shouldCompress(req, res) {
+	if (req.headers['x-no-compression']) {
+		return false;
+	}
+
+	return compression.filter(req, res);
+}
+
 // Start server
-http.listen(8080, function() {
-  console.log('listening on *:8080');
+httpsServer.listen(port, function() {
+	console.log('listening on *:' + port);
 });
