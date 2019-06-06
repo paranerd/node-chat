@@ -21,15 +21,6 @@ $(function() {
 		addMessage(msg.msg, msg.username);
 	});
 
-	/*var ws = new WebSocket('ws://localhost:8080/socket.io/?EIO=3&transport=websocket');
-
-	ws.onopen = function(e) {
-		ws.send(`42${ JSON.stringify(["testmessage", { command: "register" }]) }`, err => {
-			if (err) console.log("err", err);
-		});
-		console.log("opened");
-	}*/
-
 	let config = {
 		bufferSize: 2048
 	}
