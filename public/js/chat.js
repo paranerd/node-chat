@@ -57,6 +57,12 @@ function addMessage(msg, username, type) {
 }
 
 function getTime() {
-	var d = new Date();
-	return d.getHours() + ":" + d.getMinutes();
+	let d = new Date();
+	let hours = d.getHours();
+	let minutes = d.getMinutes();
+
+	// Pad with zeros
+	hours = (hours <= 9) ? "0" + hours : hours;
+	minutes = (minutes <= 9) ? "0" + minutes : minutes;
+	return hours + ":" + minutes;
 }
