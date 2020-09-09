@@ -1,31 +1,32 @@
-let express = require('express')
-let fs = require('fs');
-let compression = require('compression');
-let bodyParser = require('body-parser');
-let hbs  = require('express-hbs');
-let https = require('https');
+const express = require('express')
+const fs = require('fs');
+const compression = require('compression');
+const bodyParser = require('body-parser');
+const hbs  = require('express-hbs');
+const https = require('https');
 
-let privateKey = fs.readFileSync('config/server.key', 'utf8');
-let certificate = fs.readFileSync('config/server.crt', 'utf8');
+const privateKey = fs.readFileSync('config/server.key', 'utf8');
+const certificate = fs.readFileSync('config/server.crt', 'utf8');
 
-let app = express();
-let httpsServer = https.createServer({key: privateKey, cert: certificate}, app);
+const app = express();
+const httpsServer = https.createServer({key: privateKey, cert: certificate}, app);
 
-let io = require('socket.io')(httpsServer);
-let ioSession = require("express-socket.io-session");
-let db = require('./config/database');
-let passport = require('passport');
-let flash = require('connect-flash');
-let session = require('express-session')({
+const io = require('socket.io')(httpsServer);
+const ioSession = require("express-socket.io-session");
+const db = require('./config/database');
+const passport = require('passport');
+const flash = require('connect-flash');
+const session = require('express-session')({
 	secret: 'mylittlesecret',
 	resave: true,
 	saveUninitialized: true
 });
-let port = 8080;
+
+const port = 8088;
 
 app.use(compression({filter: shouldCompress}));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 
 // Include assets
 app.use(express.static(__dirname + '/public'));
@@ -92,5 +93,5 @@ function shouldCompress(req, res) {
 
 // Start server
 httpsServer.listen(port, function() {
-	console.log('listening on *:' + port);
+	console.log('Listening on https://localhost:' + port);
 });

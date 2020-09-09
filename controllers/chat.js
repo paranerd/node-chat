@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 router.get('/', isLoggedIn, function(req, res) {
     res.render('chat/index', {username: req.session.username});

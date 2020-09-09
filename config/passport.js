@@ -1,5 +1,5 @@
-var LocalStrategy = require('passport-local').Strategy;
-var User = require('../models/user');
+const LocalStrategy = require('passport-local').Strategy;
+const User = require('../models/user');
 
 module.exports = function(passport) {
     // Serialize the user for the session
@@ -19,7 +19,7 @@ module.exports = function(passport) {
     },
     function(req, username, password, done) {
         // Check if user exists
-        User.findOne({ 'username':  username }, function(err, user) {
+        User.findOne({ 'username':  username }, async function(err, user) {
             // Return errors if any
             if (err)
                 return done(err);
@@ -30,11 +30,11 @@ module.exports = function(passport) {
             }
             else {
                 // Create user
-                var newUser = new User();
+                let newUser = new User();
 
                 // Set credentials
                 newUser.username = username;
-                newUser.password = newUser.generateHash(password);
+                newUser.password = await newUser.generateHash(password);
 
                 req.session.username = username;
 
@@ -52,13 +52,13 @@ module.exports = function(passport) {
             passReqToCallback : true // allow passing back the request to the callback
     },
     function(req, username, password, done) {
-        User.findOne({ 'username': username }, function(err, user) {
+        User.findOne({ 'username': username }, async function(err, user) {
             // Return errors if any
             if (err)
                 return done(err);
 
             // If no user was found or the password is incorrect
-            if (!(user && user.validPassword(password)))
+            if (!(user && await user.validPassword(password)))
                 return done(null, false, req.flash('loginMessage', 'Invalid credentials.')); // req.flash is the way to set flashdata using connect-flash
 
             // Successful login

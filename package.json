@@ -4,24 +4,27 @@
   "description": "Chat server based on NodeJS, Express and MongoDB",
   "main": "server.js",
   "scripts": {
-    "start": "nodejs ./server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./server.js",
+    "test": "nodemon -e html,css,js server.js"
   },
   "author": "paranerd",
   "license": "ISC",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcrypt": "^5.0.0",
     "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
     "express": "^4.17.1",
-    "express-handlebars": "^3.1.0",
-    "express-hbs": "^2.2.0",
-    "express-session": "^1.15.6",
+    "express-handlebars": "^5.1.0",
+    "express-hbs": "^2.3.4",
+    "express-session": "^1.17.1",
     "express-socket.io-session": "^1.3.5",
-    "mongodb": "^3.1.13",
-    "mongoose": "^5.7.5",
-    "passport": "^0.4.0",
+    "mongodb": "^3.6.1",
+    "mongoose": "^5.10.3",
+    "passport": "^0.4.1",
     "passport-local": "^1.0.0",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }

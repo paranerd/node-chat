@@ -1,7 +1,9 @@
-var mongoose = require('mongoose');
-var bcrypt   = require('bcrypt-nodejs');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-var UserSchema = new mongoose.Schema({
+const saltRounds = 10;
+
+const UserSchema = new mongoose.Schema({
     firstName: String,
     lastName: String,
     username: String,
@@ -9,17 +11,17 @@ var UserSchema = new mongoose.Schema({
 });
 
 // Generating a hash
-UserSchema.methods.generateHash = function(password) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+UserSchema.methods.generateHash = async function(password) {
+    return await bcrypt.hash(password, saltRounds);
 };
 
 // Checking if password is valid
-UserSchema.methods.validPassword = function(password) {
-    return bcrypt.compareSync(password, this.password);
+UserSchema.methods.validPassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
 };
 
 UserSchema.statics.create = function(data) {
-    var newUser = new this(data);
+    const newUser = new this(data);
     newUser.save();
 };
 
