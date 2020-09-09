@@ -1,17 +1,11 @@
-const express = require('express')
-const fs = require('fs');
+const express = require('express');
+const app = express();
+const server = require('http').createServer(app);
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const hbs  = require('express-hbs');
-const https = require('https');
 
-const privateKey = fs.readFileSync('config/server.key', 'utf8');
-const certificate = fs.readFileSync('config/server.crt', 'utf8');
-
-const app = express();
-const httpsServer = https.createServer({key: privateKey, cert: certificate}, app);
-
-const io = require('socket.io')(httpsServer);
+const io = require('socket.io')(server);
 const ioSession = require("express-socket.io-session");
 const db = require('./config/database');
 const passport = require('passport');
@@ -92,6 +86,6 @@ function shouldCompress(req, res) {
 }
 
 // Start server
-httpsServer.listen(port, function() {
-	console.log('Listening on https://localhost:' + port);
+server.listen(port, function() {
+	console.log('Listening on http://localhost:' + port);
 });
